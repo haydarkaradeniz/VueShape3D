@@ -1,0 +1,108 @@
+canvasx  {
+    margin-top:30px;
+}
+
+.v-divider {
+    border-left: 2px solid #474747;
+    position: absolute;
+    left: 25px;
+    top: 10px;
+    height: 280px;
+  }
+
+.contextMenu {
+    position: absolute;
+    color: #F6F8FA;
+    background-color: #232323;
+    border: 2px solid #474747;
+    border-radius: 15px;
+    padding: 5px;
+}
+
+.contextMenuItem {
+    background-color: #232323;
+    padding: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 22px;
+    
+}
+.contextMenuItemSeperator {
+    border-bottom: 2px solid #474747;
+}
+.contextMenuCheck {
+    margin-top: -20px;
+    top: 5px;
+    left: -5px;
+    position: relative;
+}
+.contextMenuItem:hover {
+    background-color: #33547B;
+}
+
+.edgePanel-borderless {
+    background: #fff;
+}
+
+.edgePanel {
+    background: #fff;
+    border: 1px solid #ccc;
+}
+.tabHeader {
+    background: #e5e5e5;
+    /*height: 40px*/;
+
+}
+
+.tabButton {
+    cursor: pointer;
+    background: #e5e5e5;
+    font-weight: bold;
+    color: #7f7f7f;
+    /*height: 40px;
+    vertical-align: middle;*/
+    
+    ;
+}
+
+.tabButton:hover {
+    background: #d8d8d8;
+}
+
+.tabButton-selected {
+    background: #fff;
+    color: #000;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom:10px;
+  }
+  
+  .divider::after {
+    flex: 1;
+    content: '';
+    padding: 1px;
+    background-color: lightgray;
+    margin: 3px;
+  }
+
+  .rp-inner-margin {
+    width: 94%;
+    margin-left: 3%;
+  }
+
+  .right-panel-table {
+    width: 100%;
+    text-align: center;
+  }
+  .right-panel-btn {
+    width: 80%;
+    cursor: pointer;
+  } 
+
+  .right-panel-btn-selected {
+    background-color: gray;
+  }

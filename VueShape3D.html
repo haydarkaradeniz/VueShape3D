@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible"  />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Training VueJs Test</title>
+	<script type="application/javascript" src="scripts/p5.js"></script>
+    <script type="application/javascript" src="scripts/vue.global.js"></script>
+    <script type="application/javascript" src="scripts/common.js"></script>
+    <link type="text/css" rel="stylesheet" href="css/style.css"/> 
+    <link rel="shortcut icon" href="#">
+  </head>
+  <body>
+    
+    <div id="app" style="position:absolute">
+        
+        <div class="edgePanel-borderless" :style="{position:'absolute', top: (0)+'px', left:'0px', width:(screenWidth-15)+'px', height:(topPanelHeight-5)+'px'}">
+            top
+        </div>
+        <div class="edgePanel" :style="{position:'absolute', top: topPanelHeight + 'px', left:(screenWidth-rightPanelWidth+5)+'px', width:(rightPanelWidth-20)+'px', height:(screenHeight-bottomPanelHeight-topPanelHeight)+'px'}">
+            <div class="tabHeader">
+                <span class="tabButton" :class="{'tabButton-selected':this.rightPanelData.selectedTabId == 'model'}" @click="rightPanelData.selectedTabId = 'model'" >
+                    &nbsp;&nbsp;Model&nbsp;&nbsp;
+                </span>
+                <span class="tabButton" :class="{'tabButton-selected':this.rightPanelData.selectedTabId == 'groups'}" @click="rightPanelData.selectedTabId = 'groups'">
+                    &nbsp;&nbsp;Groups&nbsp;&nbsp;
+                </span>
+            </div>
+            <div v-if="rightPanelData.selectedTabId == 'model'"> 
+                <div class="rp-inner-margin">
+                    <div class="divider rp-inner-margin">Tools</div>
+                    <table class="right-panel-table">
+                        <tr>
+                            <td><button class="right-panel-btn" :class="{'right-panel-btn-selected':this.rightPanelData.toolsData.toolsId == 'select'}" @click="selectTools('select')"> Select </button></td>
+                            <td><button class="right-panel-btn" :class="{'right-panel-btn-selected':this.rightPanelData.toolsData.toolsId == 'move'}" @click="selectTools('move')"> Move </button></td>
+                        </tr>
+                        <tr>
+                            <td><button class="right-panel-btn" :class="{'right-panel-btn-selected':this.rightPanelData.toolsData.toolsId == 'rotate'}" @click="selectTools('rotate')"> Rotate </button></td>
+                            <td><button class="right-panel-btn" :class="{'right-panel-btn-selected':this.rightPanelData.toolsData.toolsId == 'scale'}" @click="selectTools('scale')"> Scale </button></td>
+                        </tr>
+                    </table>
+                    
+                </div>
+                
+                <div class="rp-inner-margin" v-if="rightPanelData.toolsData.toolsId == 'select'">
+                    <div class="divider rp-inner-margin">Select Options</div>
+                    <table class="right-panel-table">
+                        <tr>
+                            <td><button class="right-panel-btn" :class="{'right-panel-btn-selected': rightPanelData.toolsData.options.selectOptions == 'vertex'}" @click="rightPanelData.toolsData.options.selectOptions = 'vertex'"> Vertex </button></td>
+                            <td><button class="right-panel-btn" :class="{'right-panel-btn-selected': rightPanelData.toolsData.options.selectOptions == 'face'}" @click="rightPanelData.toolsData.options.selectOptions = 'face'"> Face </button></td>
+                            <td><button class="right-panel-btn" :class="{'right-panel-btn-selected': rightPanelData.toolsData.options.selectOptions == 'group'}" @click="rightPanelData.toolsData.options.selectOptions = 'group'"> Group </button></td>
+                        </tr>
+                    </table>
+                    
+                </div>
+
+            </div>
+            <div v-if="rightPanelData.selectedTabId == 'groups'">
+                Groups
+            </div>
+        </div>
+        <div class="edgePanel-borderless" :style="{position:'absolute', top: (screenHeight-bottomPanelHeight+5)+'px', left:'0px', width:(screenWidth-15)+'px', height:(bottomPanelHeight-20)+'px'}">
+            bottom
+        </div>
+
+
+         
+        <div  id="canvas0" v-show="contextMenuData.maximize" :style="{position:'absolute', top: topPanelHeight+'px', left:'0px', width:(screenWidth-rightPanelWidth)+'px', height:(screenHeight-topPanelHeight-bottomPanelHeight)+'px'}"></div>
+        <div  id="canvas1" v-show="!contextMenuData.maximize" :style="{background:'red', position:'absolute', top: topPanelHeight+'px', left: '0px', width: (((screenWidth - rightPanelWidth)/2)-(seperatorWidth/2))+'px', height: (((screenHeight - bottomPanelHeight - topPanelHeight)/2)-(seperatorWidth/2)) + 'px'}"></div>
+        <div  id="canvas2" v-show="!contextMenuData.maximize" :style="{background:'blue', position:'absolute', top: topPanelHeight+'px', left: (((screenWidth-rightPanelWidth)/2)+(seperatorWidth/2)) + 'px', width:(((screenWidth-rightPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
+        <div  id="canvas3" v-show="!contextMenuData.maximize" :style="{background:'yellow', position:'absolute', top: (topPanelHeight+(((screenHeight-bottomPanelHeight-topPanelHeight)/2)+(seperatorWidth/2)))+'px', left:'0px', width:(((screenWidth-rightPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
+        <div  id="canvas4" v-show="!contextMenuData.maximize" :style="{background:'green',position:'absolute', top: (topPanelHeight+(((screenHeight-bottomPanelHeight-topPanelHeight)/2)+(seperatorWidth/2)))+'px', left: (((screenWidth-rightPanelWidth)/2)+(seperatorWidth/2)) + 'px', width:(((screenWidth-rightPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
+        
+
+       
+
+
+        
+        <div v-if="contextMenuData.visible" class="contextMenu" :style="{left:contextMenuData.left+'px', top: contextMenuData.top+'px', width: contextMenuData.width+'px', height: contextMenuData.height+'px'}">
+            
+            <div @click="contextMenuAction('wireframe')" class="contextMenuItem"><img v-if="contextMenuData.drawMode == 'wireframe'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Wireframe</div>
+            <div @click="contextMenuAction('flatShaded')" class="contextMenuItem"><img v-if="contextMenuData.drawMode ==  'flatShaded'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Flat Shaded</div>
+            <div @click="contextMenuAction('smoothShaded')" class="contextMenuItem contextMenuItemSeperator"><img v-if="contextMenuData.drawMode == 'smoothShaded'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Smooth Shaded</div>
+            
+            <div @click="contextMenuAction('wireframeOverlay')" class="contextMenuItem contextMenuItemSeperator"><img v-if="contextMenuData.wireframeOverlay" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Wireframe Overlay</div>
+            
+            <div @click="contextMenuAction('projection')" class="contextMenuItem contextMenuItemSeperator">&nbsp;Projection</div>
+        
+            <div @click="contextMenuAction('showAxis')" class="contextMenuItem"><img v-if="contextMenuData.showAxis" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Show Axis</div>
+            <div @click="contextMenuAction('showGrid')" class="contextMenuItem contextMenuItemSeperator"><img v-if="contextMenuData.showGrid" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Show Grid</div>
+            
+            <div @click="contextMenuAction('drawBackfaces')" class="contextMenuItem contextMenuItemSeperator"><img v-if="contextMenuData.drawBackfaces" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Draw Backfaces</div>
+            
+            <div @click="contextMenuAction('resetView')" class="contextMenuItem">&nbsp;Reset View</div>
+            <div @click="contextMenuAction('maximize')" class="contextMenuItem contextMenuItemSeperator"><img v-if="contextMenuData.maximize" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Maximize</div>
+            
+
+        </div>
+
+        <div v-if="contextMenuData.projectionMenu.visible" class="contextMenu" :style="{left:contextMenuData.projectionMenu.left+'px', top: contextMenuData.projectionMenu.top+'px', width: contextMenuData.projectionMenu.width+'px', height: contextMenuData.projectionMenu.height+'px'}">
+            <div @click="contextMenuAction('3d')" class="contextMenuItem"><img v-if="contextMenuData.projectionMenu.projectionDirection == '3d'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;3D</div>
+            <div @click="contextMenuAction('front')" class="contextMenuItem"><img v-if="contextMenuData.projectionMenu.projectionDirection == 'front'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Front</div>
+            <div @click="contextMenuAction('back')" class="contextMenuItem"><img v-if="contextMenuData.projectionMenu.projectionDirection == 'back'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Back</div>
+            <div @click="contextMenuAction('left')" class="contextMenuItem"><img v-if="contextMenuData.projectionMenu.projectionDirection == 'left'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Left</div>
+            <div @click="contextMenuAction('right')" class="contextMenuItem"><img v-if="contextMenuData.projectionMenu.projectionDirection == 'right'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Right</div>
+            <div @click="contextMenuAction('top')" class="contextMenuItem"><img v-if="contextMenuData.projectionMenu.projectionDirection == 'top'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Top</div>
+            <div @click="contextMenuAction('bottom')" class="contextMenuItem"><img v-if="contextMenuData.projectionMenu.projectionDirection == 'bottom'" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Bottom</div>
+            
+
+        </div>
+        
+
+
+       
+
+
+
+        
+        
+    </div>
+        <script type="application/javascript" src="scripts/app.js"></script>	
+  </body>
+</html>
