@@ -1,18 +1,29 @@
 var rightPanelWidth = 250;
+var leftPanelWidth = 5;
 var bottomPanelHeight = 150;
 var topPanelHeight = 30;
 var screenHeight = 0;
 var screenWidth = 0;
 var seperatorWidth = 4;
+var axisLength = 70;
+var cameraDistance = 400;
+var wireframeColor = 'white';
+var selectedWireframeColor = 'red';
+
+var modelData = {
+  vertexList : [],
+  groupList : [],
+
+};
 
 var projectionData = {
   maximized : false,
-  maximizedIndex : 0,
+  maximizedIndex : -1,
   projectionIndex : 0,
   projections : [
     {
       direction : 'front',
-      drawMode : 'wireframe',
+      drawMode : 'flatShaded',
       wireframeOverlay : true,
       showAxis : true,
       showGrid : true,
@@ -20,7 +31,7 @@ var projectionData = {
     },
     {
       direction : 'left',
-      drawMode : 'wireframe',
+      drawMode : 'flatShaded',
       wireframeOverlay : true,
       showAxis : true,
       showGrid : true,
@@ -28,7 +39,7 @@ var projectionData = {
     },
     {
       direction : 'top',
-      drawMode : 'wireframe',
+      drawMode : 'flatShaded',
       wireframeOverlay : true,
       showAxis : true,
       showGrid : true,
@@ -36,7 +47,7 @@ var projectionData = {
     },
     {
       direction : '3d',
-      drawMode : 'wireframe',
+      drawMode : 'flatShaded',
       wireframeOverlay : true,
       showAxis : true,
       showGrid : true,
@@ -49,6 +60,7 @@ const app = Vue.createApp({
   data() {
     return {
       rightPanelWidth : rightPanelWidth,
+      leftPanelWidth : leftPanelWidth,
       bottomPanelHeight : bottomPanelHeight,
       topPanelHeight : topPanelHeight,
       seperatorWidth : seperatorWidth,
@@ -73,7 +85,7 @@ const app = Vue.createApp({
           width : 100,
           height : 170,
           projectionDirection : "",
-        }
+        },
       },
       rightPanelData : {
         selectedTabId : 'model',
@@ -84,6 +96,11 @@ const app = Vue.createApp({
           }
         }
       },
+      groupList : [],
+      vertexList : [],
+      groupSelectAll : false,
+      groupVisibleAll : true,
+      vertexSelectAll : true,
     };
   },
   mounted() {    
@@ -91,7 +108,6 @@ const app = Vue.createApp({
   },
   created() {
      this.initializeSize();
-     common.init(0, topPanelHeight, this.screenWidth-rightPanelWidth, this.screenHeight-bottomPanelHeight-topPanelHeight, seperatorWidth);
      window.addEventListener("resize", this.resizeEventHandler);
      window.addEventListener("contextmenu", this.contextmenuEventHandler);
      window.addEventListener("click", this.clickEventHandler);
@@ -114,6 +130,7 @@ const app = Vue.createApp({
     initializeSize() {
       this.screenHeight = window.innerHeight;
       this.screenWidth =  window.innerWidth;
+      common.init(leftPanelWidth, topPanelHeight, this.screenWidth-rightPanelWidth-leftPanelWidth, this.screenHeight-bottomPanelHeight-topPanelHeight, seperatorWidth); 
     },
 
     showContextMenu(clientX, clientY) {
@@ -125,6 +142,7 @@ const app = Vue.createApp({
       this.contextMenuData.showAxis = projectionData.projections[projectionData.projectionIndex].showAxis;
       this.contextMenuData.showGrid = projectionData.projections[projectionData.projectionIndex].showGrid;
       this.contextMenuData.drawBackfaces = projectionData.projections[projectionData.projectionIndex].drawBackfaces;
+      this.contextMenuData.projectionMenu.projectionDirection = projectionData.projections[projectionData.projectionIndex].direction;
       this.contextMenuData.visible = true;
     },
 
@@ -146,6 +164,21 @@ const app = Vue.createApp({
         this.hideContextMenu();
       }
       this.contextMenuData.projectionMenu.top = e.clientY;
+      
+      
+
+      var centerPoint = common.getCenterPoint(e.clientX, e.clientY, projectionData.maximized);
+      console.log("clicked (" + e.clientX + "," + e.clientY + ")");
+      console.log("center (" + centerPoint.x + "," + centerPoint.y + ")");
+      console.log("cdistance (" + (centerPoint.x - e.clientX) + "," + (centerPoint.y - e.clientY) + ")");
+      
+
+      if(this.rightPanelData.selectedTabId == 'model' && this.rightPanelData.toolsData.toolsId == 'select') {
+        
+
+      }
+
+
     },
 
 
@@ -160,7 +193,10 @@ const app = Vue.createApp({
   },
   contextMenuAction(actionId) {
     switch(actionId) {
-      case "wireframe" :
+      case "wireframe" : {
+        this.contextMenuData.wireframeOverlay = true;
+        projectionData.projections[projectionData.projectionIndex].wireframeOverlay = true;
+      }
       case "flatShaded" :
       case "smoothShaded" : {
         this.contextMenuData.drawMode = actionId;
@@ -172,9 +208,11 @@ const app = Vue.createApp({
       case "showAxis" :
       case "showGrid" :
       case "drawBackfaces" : {
-        this.contextMenuData[actionId] = !this.contextMenuData[actionId];
-        projectionData.projections[projectionData.projectionIndex][actionId] = this.contextMenuData[actionId];
-        this.hideContextMenu();
+        if(!(actionId == "wireframeOverlay" && this.contextMenuData.wireframeOverlay && this.contextMenuData.drawMode == "wireframe")) {
+          this.contextMenuData[actionId] = !this.contextMenuData[actionId];
+          projectionData.projections[projectionData.projectionIndex][actionId] = this.contextMenuData[actionId];
+          this.hideContextMenu();
+        }
         break;
       }
       case "maximize" : {
@@ -193,7 +231,6 @@ const app = Vue.createApp({
         this.contextMenuData.projectionMenu.visible = !this.contextMenuData.projectionMenu.visible;
         if(this.contextMenuData.projectionMenu.visible) {
           this.contextMenuData.projectionMenu.left = this.contextMenuData.left + this.contextMenuData.width;
-          this.contextMenuData.projectionMenu.projectionDirection = projectionData.projections[projectionData.projectionIndex].direction;
         }
         break;
       }
@@ -220,10 +257,87 @@ const app = Vue.createApp({
 
 
   },
+
+
+
+  refreshGroupList() {
+    this.groupList = model.getGroupList(-1);
+  },
+
+  refreshVertexList() {
+    this.vertexList = model.getVertexList();
+  },
+  
+
+  groupListChanged(event, param, groupId) {
+    if(param == 'select') {
+      model.selectGroup(groupId, event.target.checked);
+      var selectedGroupCount = 0;
+      for(var i=0; i<this.groupList.length; i++){
+        if(this.groupList[i].selected) {
+          selectedGroupCount++;
+        }
+      }
+      if(selectedGroupCount == this.groupList.length) {
+        this.groupSelectAll = true;
+      } else {
+        this.groupSelectAll = false;
+      }
+      this.refreshVertexList();
+    } else if(param == 'selectAll') {
+      model.selectAllGroup(event.target.checked);
+      this.vertexSelectAll = event.target.checked;
+      this.refreshVertexList();
+    } else if(param == 'visible') {
+      var visibleGroupCount = 0;
+      for(var i=0; i<this.groupList.length; i++){
+        if(this.groupList[i].visible) {
+          visibleGroupCount++;
+        }
+      }
+      if(visibleGroupCount == this.groupList.length) {
+        this.groupVisibleAll = true;
+      } else {
+        this.groupVisibleAll = false;
+      }
+    } else if(param == 'visibleAll') {
+      for(var i=0; i<this.groupList.length; i++){
+        this.groupList[i].visible = event.target.checked;
+      }
+    }
+  },
+
+  vertexListChanged(event, param) {
+    if(param == 'select') {
+      var selectedVertexCount = 0;
+      for(var i=0; i<this.vertexList.length; i++){
+        if(this.vertexList[i].selected) {
+          selectedVertexCount++;
+        }
+      }
+      if(selectedVertexCount == this.vertexList.length) {
+        this.vertexSelectAll = true;
+      } else {
+        this.vertexSelectAll = false;
+      }
+    } else if(param == 'selectAll') {
+      for(var i=0; i<this.vertexList.length; i++){
+        this.vertexList[i].selected = event.target.checked;
+      }
+    }
+  },
+
+  getSelectedGroupList() {
+    return model.getSelectedGroupList();
+  },
+
+  moveVertexUp() {
+
+  },
 	
   },
   computed: {
-	 
+    
   },
   
   watch: {/*
@@ -233,12 +347,23 @@ const app = Vue.createApp({
 		  }
 	  }
       */
-	screenHeight(newValue, oldValue) {
-		screenHeight = newValue;
-	},
-	screenWidth(newValue, oldValue) {
-		screenWidth = newValue;
-	},
+    rightPanelData: {
+		  deep: true, handler(newValue) {
+        if(newValue.selectedTabId == 'groups') {
+          this.refreshGroupList();
+          this.refreshVertexList();
+        }
+		  }
+	  },
+
+    screenHeight(newValue, oldValue) {
+      screenHeight = newValue;
+    },
+    screenWidth(newValue, oldValue) {
+      screenWidth = newValue;
+    },
+
+
   }
   
 
@@ -292,26 +417,254 @@ new p5(( sketch ) => {
 ];
 
 
+model.addGroup([
+  model.addVertex(-50,50,-50),
+  model.addVertex(50,50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(-50,-50,-50),
+], {color:'red'});
+
+model.addGroup([
+  model.addVertex(-50,50,50),
+  model.addVertex(50,50,50),
+  model.addVertex(50,-50,50),
+  model.addVertex(-50,-50,50),
+], {color:'orange'});
+
+model.addGroup([
+  model.addVertex(50,50,50),
+  model.addVertex(50,50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'blue'});
+
+model.addGroup([
+  model.addVertex(-50,50,50),
+  model.addVertex(-50,50,-50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(-50,-50,50),
+], {color:'green'});
+
+model.addGroup([
+  model.addVertex(-50,50,50),
+  model.addVertex(-50,50,-50),
+  model.addVertex(50,50,-50),
+  model.addVertex(50,50,50),
+], {color:'yellow'});
+
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+
+
+
+
+
+
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+model.addGroup([
+  model.addVertex(-50,-50,50),
+  model.addVertex(-50,-50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
+], {color:'gray'});
+
 
 
 function setupCanvas(projectionId) {
   if(projectionId == 0) {
-    canvasList[projectionId].createCanvas(screenWidth-rightPanelWidth, screenHeight-bottomPanelHeight-topPanelHeight, canvasList[projectionId].WEBGL);
+    canvasList[projectionId].createCanvas(screenWidth-rightPanelWidth-leftPanelWidth, screenHeight-bottomPanelHeight-topPanelHeight, canvasList[projectionId].WEBGL);
   } else {
-    canvasList[projectionId].createCanvas(((screenWidth-rightPanelWidth)/2)-(seperatorWidth/2), ((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2), canvasList[projectionId].WEBGL);
+    canvasList[projectionId].createCanvas(((screenWidth-rightPanelWidth-leftPanelWidth)/2)-(seperatorWidth/2), ((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2), canvasList[projectionId].WEBGL);
+  }
+  canvasList[projectionId].ortho();
+}
+
+function getProjectionIndex(projectionId) {
+  if(projectionId == 0) {
+    return projectionData.maximizedIndex>-1 ? projectionData.maximizedIndex : 0;
+  } else {
+    return projectionId-1;
   }
 }
 
 function drawCanvas(projectionId) {
+  var cameraX, cameraY, cameraZ;
+  var cameraUpX, cameraUpY, cameraUpZ;
+  switch(projectionData.projections[getProjectionIndex(projectionId)].direction)  {
+    case "3d" :  {
+      cameraX = 0;
+      cameraY = 0;
+      cameraZ = cameraDistance;
+      cameraUpX = 0;
+      cameraUpY = 1;
+      cameraUpZ = 0;
+      break;
+    }
+    case "front" :  {
+      cameraX = 0;
+      cameraY = 0;
+      cameraZ = cameraDistance;
+      cameraUpX = 0;
+      cameraUpY = 1;
+      cameraUpZ = 0;
+      break;
+    }
+    case "back" :  {
+      cameraX = 0;
+      cameraY = 0;
+      cameraZ = - cameraDistance;
+      cameraUpX = 0;
+      cameraUpY = 1;
+      cameraUpZ = 0;
+      break;
+    }
+    case "left" :  {
+      cameraX = - cameraDistance;
+      cameraY = 0;
+      cameraZ = 0;
+      cameraUpX = 0;
+      cameraUpY = 1;
+      cameraUpZ = 0;
+      break;
+    }
+    case "right" :  {
+      cameraX = cameraDistance;
+      cameraY = 0;
+      cameraZ = 0;
+      cameraUpX = 0;
+      cameraUpY = 1;
+      cameraUpZ = 0;
+      break;
+    }
+    case "top" :   {
+      cameraX = 0;
+      cameraY = cameraDistance;
+      cameraZ = 0;
+      cameraUpX = 1;
+      cameraUpY = 0;
+      cameraUpZ = 0;
+      break;
+    }
+    case "bottom" :  {
+      cameraX = 0;
+      cameraY = - cameraDistance;
+      cameraZ = 0;
+      cameraUpX = 1;
+      cameraUpY = 0;
+      cameraUpZ = 0;
+      break;
+    }
+  };
+  canvasList[projectionId].camera(cameraX, cameraY, cameraZ, 0, 0, 0, cameraUpX, cameraUpY, cameraUpZ);
   canvasList[projectionId].background(200);
-  canvasList[projectionId].fill(255);
-  //canvasList[projectionId].rect(0,0,50,50);
-  canvasList[projectionId].box(50);
+  
+
+
+  for(var i=0; i<model.getGroupList().length; i++) {
+    var group = model.getGroupList()[i];
+    var groupVertexList = model.getVertexList(group.id);
+    if(group.visible) {
+      if(projectionData.projections[getProjectionIndex(projectionId)].drawMode == 'wireframe') {
+        canvasList[projectionId].noFill();
+      }
+      else if(group.color) {
+        canvasList[projectionId].fill(group.color);
+      }
+
+      //canvasList[projectionId].beginShape(canvasList[projectionId].QUADS);
+      if(projectionData.projections[getProjectionIndex(projectionId)].wireframeOverlay) {
+        canvasList[projectionId].strokeWeight(2);
+      } else {
+        canvasList[projectionId].noStroke();
+      }
+      
+      canvasList[projectionId].beginShape();
+      canvasList[projectionId].stroke(group.selected ? selectedWireframeColor : wireframeColor);
+      for(var j=0; j<groupVertexList.length; j++) {
+        var vertex =groupVertexList[j];
+        canvasList[projectionId].vertex(vertex.x, vertex.y, vertex.z);  
+      }
+      var vertex = groupVertexList[0];
+      if(!vertex) {
+        console.log("groupId " + group.id);
+      }
+      canvasList[projectionId].vertex(vertex.x, vertex.y, vertex.z); 
+      canvasList[projectionId].endShape();
+    }
+
+    if(projectionData.projections[getProjectionIndex(projectionId)].wireframeOverlay) {
+      canvasList[projectionId].strokeWeight(5);
+      for(var j=0; j<groupVertexList.length; j++) {
+        var vertex = groupVertexList[j];
+        canvasList[projectionId].stroke(vertex.selected ? selectedWireframeColor : wireframeColor);
+        canvasList[projectionId].point(vertex.x, vertex.y, vertex.z);
+      }
+    }
+ 
+  }
+
+  if(projectionData.projections[getProjectionIndex(projectionId)].showAxis) {
+    canvasList[projectionId].strokeWeight(1);
+    canvasList[projectionId].stroke('FF0000');
+    canvasList[projectionId].line(0,0,0,this.axisLength,0,0);
+    canvasList[projectionId].stroke('00FF00');
+    canvasList[projectionId].line(0,0,0,0,this.axisLength,0);
+    canvasList[projectionId].stroke('0000FF');
+    canvasList[projectionId].line(0,0,0,0,0,this.axisLength);
+  }
+  
 }
 
+
+
 function resize() {
-  canvasList[0].resizeCanvas(screenWidth-rightPanelWidth, screenHeight-bottomPanelHeight-topPanelHeight, canvasList[0]);
+  canvasList[0].resizeCanvas(screenWidth-rightPanelWidth-leftPanelWidth, screenHeight-bottomPanelHeight-topPanelHeight, canvasList[0]);
   for(var i=1; i<canvasList.length; i++) {
-      canvasList[i].resizeCanvas(((screenWidth-rightPanelWidth)/2)-(seperatorWidth/2), ((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2), canvasList[i].WEBGL);  
+      canvasList[i].resizeCanvas(((screenWidth-rightPanelWidth-leftPanelWidth)/2)-(seperatorWidth/2), ((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2), canvasList[i].WEBGL);  
   }
 }

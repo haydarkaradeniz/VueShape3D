@@ -35,4 +35,37 @@ var common = {
         }
     },
 
+    getCenterPoint(clientX, clientY, maximized) {
+        if(maximized) {
+            return {
+                x : this.canvasLeft + (this.canvasWidth/2),
+                y : this.canvasTop + (this.canvasHeight/2)
+            }
+        } else {
+            var canvasIndex = this.retrieveCanvasIndex(clientX, clientY);
+            if(canvasIndex == 0) {
+                return {
+                    x : this.canvasLeft + (this.canvasWidth/4) - (this.seperatorWidth/4),
+                    y : this.canvasTop + (this.canvasHeight/4) - (this.seperatorWidth/4),
+                }
+            } else if(canvasIndex == 1) {
+                return {
+                    x : this.canvasLeft + (this.canvasWidth*3/4) + (this.seperatorWidth/4),
+                    y : this.canvasTop + (this.canvasHeight/4) - (this.seperatorWidth/4),
+                }
+            } else if(canvasIndex == 2) {
+                return {
+                    x : this.canvasLeft + (this.canvasWidth/4) - (this.seperatorWidth/4),
+                    y : this.canvasTop + (this.canvasHeight*3/4) + (this.seperatorWidth/4),
+                }
+            } else if(canvasIndex == 3) {
+                return {
+                    x : this.canvasLeft + (this.canvasWidth*3/4) + (this.seperatorWidth/4),
+                    y : this.canvasTop + (this.canvasHeight*3/4) + (this.seperatorWidth/4),
+                }
+            }
+        }
+
+    }
+
 }

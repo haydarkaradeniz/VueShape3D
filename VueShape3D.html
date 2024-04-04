@@ -8,6 +8,7 @@
 	<script type="application/javascript" src="scripts/p5.js"></script>
     <script type="application/javascript" src="scripts/vue.global.js"></script>
     <script type="application/javascript" src="scripts/common.js"></script>
+    <script type="application/javascript" src="scripts/model.js"></script>
     <link type="text/css" rel="stylesheet" href="css/style.css"/> 
     <link rel="shortcut icon" href="#">
   </head>
@@ -48,7 +49,6 @@
                     <table class="right-panel-table">
                         <tr>
                             <td><button class="right-panel-btn" :class="{'right-panel-btn-selected': rightPanelData.toolsData.options.selectOptions == 'vertex'}" @click="rightPanelData.toolsData.options.selectOptions = 'vertex'"> Vertex </button></td>
-                            <td><button class="right-panel-btn" :class="{'right-panel-btn-selected': rightPanelData.toolsData.options.selectOptions == 'face'}" @click="rightPanelData.toolsData.options.selectOptions = 'face'"> Face </button></td>
                             <td><button class="right-panel-btn" :class="{'right-panel-btn-selected': rightPanelData.toolsData.options.selectOptions == 'group'}" @click="rightPanelData.toolsData.options.selectOptions = 'group'"> Group </button></td>
                         </tr>
                     </table>
@@ -57,7 +57,40 @@
 
             </div>
             <div v-if="rightPanelData.selectedTabId == 'groups'">
-                Groups
+                <div class="divider rp-inner-margin">Group</div>
+                <div :style="{'max-height': ((screenHeight-bottomPanelHeight-topPanelHeight-100)/2)+'px !important', width: '95%', 'overflow-y': 'auto'}">
+                    <table class="gvTable">
+                        <tr>
+                            <th><input type="checkbox" v-model="groupSelectAll" @change="groupListChanged($event,'selectAll', -1)" id="groupListSelectAll"></th>
+                            <th style="text-align: center;">Id</th>
+                            <th style="text-align: center;">Vertex C.</th>
+                            <th style="text-align: right;">Visible <input type="checkbox" v-model="groupVisibleAll" @change="groupListChanged($event,'visibleAll')" id="groupListVisibleAll"></th>
+                        </tr>
+                        <tr v-for="(group, index) in groupList">
+                            <td><input type="checkbox" v-model="group.selected" @change="groupListChanged($event,'select', group.id)" :id="'groupListSelect-' + group.id"></td>
+                            <td style="text-align: center;">{{("000"+ (group.id+1)).slice(-3)}}</td>
+                            <td style="text-align: center;">{{group.vertexCount}}</td>
+                            <td style="text-align: right;"><input type="checkbox" @change="groupListChanged($event,'visible')" v-model="group.visible" :id="'groupListVisible-' + group.id"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="divider rp-inner-margin">Vertex</div>
+                <div :style="{'max-height': ((screenHeight-bottomPanelHeight-topPanelHeight-100)/2)+'px !important', width: '95%', 'overflow-y': 'auto'}">
+                    <table class="gvTable">
+                        <tr>
+                            <th><input type="checkbox" v-model="vertexSelectAll" @change="vertexListChanged($event,'selectAll')" id="vertexListSelectAll"></th>
+                            <th style="text-align: center;">Id</th>
+                            <th style="text-align: center;">Group Id</th>
+                            <th style="text-align: center;">Move</th>
+                        </tr>
+                        <tr v-for="(vertex, index) in vertexList">
+                            <td><input type="checkbox" v-model="vertex.selected" @change="vertexListChanged($event,'select')" :id="'vertexListSelect-' + vertex.id"></td>
+                            <td style="text-align: center;">{{("000"+ (vertex.id+1)).slice(-3)}}</td>
+                            <td style="text-align: center;">{{("000"+ (vertex.groupId+1)).slice(-3)}}</td>
+                            <td :style="{'text-align':'center', 'color':(getSelectedGroupList().length == 1 ? 'black' : 'lightgray'), 'cursor':(getSelectedGroupList().length == 1 ? 'pointer' : 'auto')}"><span>&nbsp;&#11014;&nbsp;</span><span>&nbsp;&#11015;&nbsp;</span></td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
         <div class="edgePanel-borderless" :style="{position:'absolute', top: (screenHeight-bottomPanelHeight+5)+'px', left:'0px', width:(screenWidth-15)+'px', height:(bottomPanelHeight-20)+'px'}">
@@ -66,11 +99,11 @@
 
 
          
-        <div  id="canvas0" v-show="contextMenuData.maximize" :style="{position:'absolute', top: topPanelHeight+'px', left:'0px', width:(screenWidth-rightPanelWidth)+'px', height:(screenHeight-topPanelHeight-bottomPanelHeight)+'px'}"></div>
-        <div  id="canvas1" v-show="!contextMenuData.maximize" :style="{background:'red', position:'absolute', top: topPanelHeight+'px', left: '0px', width: (((screenWidth - rightPanelWidth)/2)-(seperatorWidth/2))+'px', height: (((screenHeight - bottomPanelHeight - topPanelHeight)/2)-(seperatorWidth/2)) + 'px'}"></div>
-        <div  id="canvas2" v-show="!contextMenuData.maximize" :style="{background:'blue', position:'absolute', top: topPanelHeight+'px', left: (((screenWidth-rightPanelWidth)/2)+(seperatorWidth/2)) + 'px', width:(((screenWidth-rightPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
-        <div  id="canvas3" v-show="!contextMenuData.maximize" :style="{background:'yellow', position:'absolute', top: (topPanelHeight+(((screenHeight-bottomPanelHeight-topPanelHeight)/2)+(seperatorWidth/2)))+'px', left:'0px', width:(((screenWidth-rightPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
-        <div  id="canvas4" v-show="!contextMenuData.maximize" :style="{background:'green',position:'absolute', top: (topPanelHeight+(((screenHeight-bottomPanelHeight-topPanelHeight)/2)+(seperatorWidth/2)))+'px', left: (((screenWidth-rightPanelWidth)/2)+(seperatorWidth/2)) + 'px', width:(((screenWidth-rightPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
+        <div  id="canvas0" v-show="contextMenuData.maximize" :style="{position:'absolute', top: topPanelHeight+'px', left:leftPanelWidth + 'px', width:(screenWidth-rightPanelWidth-leftPanelWidth)+'px', height:(screenHeight-topPanelHeight-bottomPanelHeight)+'px'}"></div>
+        <div  id="canvas1" v-show="!contextMenuData.maximize" :style="{background:'red', position:'absolute', top: topPanelHeight+'px', left: leftPanelWidth + 'px', width: (((screenWidth - rightPanelWidth-leftPanelWidth)/2)-(seperatorWidth/2))+'px', height: (((screenHeight - bottomPanelHeight - topPanelHeight)/2)-(seperatorWidth/2)) + 'px'}"></div>
+        <div  id="canvas2" v-show="!contextMenuData.maximize" :style="{background:'blue', position:'absolute', top: topPanelHeight+'px', left: (((screenWidth-rightPanelWidth+leftPanelWidth)/2)+(seperatorWidth/2)) + 'px', width:(((screenWidth-rightPanelWidth-leftPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
+        <div  id="canvas3" v-show="!contextMenuData.maximize" :style="{background:'yellow', position:'absolute', top: (topPanelHeight+(((screenHeight-bottomPanelHeight-topPanelHeight)/2)+(seperatorWidth/2)))+'px', left:leftPanelWidth+'px', width:(((screenWidth-rightPanelWidth-leftPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
+        <div  id="canvas4" v-show="!contextMenuData.maximize" :style="{background:'green',position:'absolute', top: (topPanelHeight+(((screenHeight-bottomPanelHeight-topPanelHeight)/2)+(seperatorWidth/2)))+'px', left: (((screenWidth-rightPanelWidth+leftPanelWidth)/2)+(seperatorWidth/2)) + 'px', width:(((screenWidth-rightPanelWidth-leftPanelWidth)/2)-(seperatorWidth/2))+'px', height:(((screenHeight-bottomPanelHeight-topPanelHeight)/2)-(seperatorWidth/2))+'px'}"></div>
         
 
        
@@ -85,7 +118,7 @@
             
             <div @click="contextMenuAction('wireframeOverlay')" class="contextMenuItem contextMenuItemSeperator"><img v-if="contextMenuData.wireframeOverlay" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Wireframe Overlay</div>
             
-            <div @click="contextMenuAction('projection')" class="contextMenuItem contextMenuItemSeperator">&nbsp;Projection</div>
+            <div @click="contextMenuAction('projection')" class="contextMenuItem contextMenuItemSeperator">&nbsp;Projection ({{contextMenuData.projectionMenu.projectionDirection}})</div>
         
             <div @click="contextMenuAction('showAxis')" class="contextMenuItem"><img v-if="contextMenuData.showAxis" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Show Axis</div>
             <div @click="contextMenuAction('showGrid')" class="contextMenuItem contextMenuItemSeperator"><img v-if="contextMenuData.showGrid" class="contextMenuCheck" src="images\checked.svg" style="margin-left:-20px"/>&nbsp;Show Grid</div>
