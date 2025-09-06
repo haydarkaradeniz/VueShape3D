@@ -118,3 +118,14 @@ input[type="checkbox"] {
     text-align: left;
   }
 
+  .right-panel-act-div {
+    text-align: right;
+    margin-top: -8px;
+    margin-bottom: 5px;
+    height: 20px;
+  }
+
+  .right-panel-act-btn {
+    margin-right: 5px;
+    cursor: pointer;
+  }

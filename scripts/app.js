@@ -5,10 +5,12 @@ var topPanelHeight = 30;
 var screenHeight = 0;
 var screenWidth = 0;
 var seperatorWidth = 4;
-var axisLength = 70;
+var axisLength = 140;
 var cameraDistance = 400;
 var wireframeColor = 'white';
 var selectedWireframeColor = 'red';
+var uniqueVertexData = {};
+var uniqueEdgeData = {};
 
 var modelData = {
   vertexList : [],
@@ -30,6 +32,14 @@ var projectionData = {
       drawBackfaces : true,
     },
     {
+      direction : 'back',
+      drawMode : 'flatShaded',
+      wireframeOverlay : true,
+      showAxis : true,
+      showGrid : true,
+      drawBackfaces : true,
+    },
+    {
       direction : 'left',
       drawMode : 'flatShaded',
       wireframeOverlay : true,
@@ -38,15 +48,7 @@ var projectionData = {
       drawBackfaces : true,
     },
     {
-      direction : 'top',
-      drawMode : 'flatShaded',
-      wireframeOverlay : true,
-      showAxis : true,
-      showGrid : true,
-      drawBackfaces : true,
-    },
-    {
-      direction : '3d',
+      direction : 'right',
       drawMode : 'flatShaded',
       wireframeOverlay : true,
       showAxis : true,
@@ -95,6 +97,9 @@ const app = Vue.createApp({
             selectOptions : 'vertex'
           }
         }
+      },
+      bottomPanelData : {
+        selectedTabId : 'test',
       },
       groupList : [],
       vertexList : [],
@@ -174,7 +179,9 @@ const app = Vue.createApp({
       
 
       if(this.rightPanelData.selectedTabId == 'model' && this.rightPanelData.toolsData.toolsId == 'select') {
-        
+        if(this.rightPanelData.toolsData.options.selectOptions == 'vertex') {
+
+        }
 
       }
 
@@ -417,33 +424,39 @@ new p5(( sketch ) => {
 ];
 
 
+
+
+
+
 model.addGroup([
   model.addVertex(-50,50,-50),
   model.addVertex(50,50,-50),
   model.addVertex(50,-50,-50),
   model.addVertex(-50,-50,-50),
-], {color:'red'});
+], {color:'green'});
+
 
 model.addGroup([
   model.addVertex(-50,50,50),
   model.addVertex(50,50,50),
   model.addVertex(50,-50,50),
   model.addVertex(-50,-50,50),
+], {color:'blue'});
+
+
+model.addGroup([
+  model.addVertex(50,50,50),
+  model.addVertex(50,50,-50),
+  model.addVertex(50,-50,-50),
+  model.addVertex(50,-50,50),
 ], {color:'orange'});
 
 model.addGroup([
-  model.addVertex(50,50,50),
-  model.addVertex(50,50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'blue'});
-
-model.addGroup([
   model.addVertex(-50,50,50),
   model.addVertex(-50,50,-50),
   model.addVertex(-50,-50,-50),
   model.addVertex(-50,-50,50),
-], {color:'green'});
+], {color:'red'});
 
 model.addGroup([
   model.addVertex(-50,50,50),
@@ -459,59 +472,6 @@ model.addGroup([
   model.addVertex(50,-50,50),
 ], {color:'gray'});
 
-
-
-
-
-
-model.addGroup([
-  model.addVertex(-50,-50,50),
-  model.addVertex(-50,-50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'gray'});
-model.addGroup([
-  model.addVertex(-50,-50,50),
-  model.addVertex(-50,-50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'gray'});
-model.addGroup([
-  model.addVertex(-50,-50,50),
-  model.addVertex(-50,-50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'gray'});
-model.addGroup([
-  model.addVertex(-50,-50,50),
-  model.addVertex(-50,-50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'gray'});
-model.addGroup([
-  model.addVertex(-50,-50,50),
-  model.addVertex(-50,-50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'gray'});
-model.addGroup([
-  model.addVertex(-50,-50,50),
-  model.addVertex(-50,-50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'gray'});
-model.addGroup([
-  model.addVertex(-50,-50,50),
-  model.addVertex(-50,-50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'gray'});
-model.addGroup([
-  model.addVertex(-50,-50,50),
-  model.addVertex(-50,-50,-50),
-  model.addVertex(50,-50,-50),
-  model.addVertex(50,-50,50),
-], {color:'gray'});
 
 
 
@@ -541,34 +501,34 @@ function drawCanvas(projectionId) {
       cameraY = 0;
       cameraZ = cameraDistance;
       cameraUpX = 0;
-      cameraUpY = 1;
+      cameraUpY = 0;
       cameraUpZ = 0;
       break;
     }
     case "front" :  {
       cameraX = 0;
       cameraY = 0;
-      cameraZ = cameraDistance;
+      cameraZ = -cameraDistance;
       cameraUpX = 0;
-      cameraUpY = 1;
+      cameraUpY = -1;
       cameraUpZ = 0;
       break;
     }
     case "back" :  {
       cameraX = 0;
       cameraY = 0;
-      cameraZ = - cameraDistance;
+      cameraZ = cameraDistance;
       cameraUpX = 0;
-      cameraUpY = 1;
+      cameraUpY = -1;
       cameraUpZ = 0;
       break;
     }
     case "left" :  {
-      cameraX = - cameraDistance;
+      cameraX = -cameraDistance;
       cameraY = 0;
       cameraZ = 0;
       cameraUpX = 0;
-      cameraUpY = 1;
+      cameraUpY = -1;
       cameraUpZ = 0;
       break;
     }
@@ -577,7 +537,7 @@ function drawCanvas(projectionId) {
       cameraY = 0;
       cameraZ = 0;
       cameraUpX = 0;
-      cameraUpY = 1;
+      cameraUpY = -1;
       cameraUpZ = 0;
       break;
     }
@@ -585,46 +545,57 @@ function drawCanvas(projectionId) {
       cameraX = 0;
       cameraY = cameraDistance;
       cameraZ = 0;
-      cameraUpX = 1;
+      cameraUpX = 0;
       cameraUpY = 0;
-      cameraUpZ = 0;
+      cameraUpZ = -1;
       break;
     }
     case "bottom" :  {
       cameraX = 0;
-      cameraY = - cameraDistance;
+      cameraY = -cameraDistance;
       cameraZ = 0;
-      cameraUpX = 1;
+      cameraUpX = 0;
       cameraUpY = 0;
-      cameraUpZ = 0;
+      cameraUpZ = 1;
       break;
     }
   };
+  
   canvasList[projectionId].camera(cameraX, cameraY, cameraZ, 0, 0, 0, cameraUpX, cameraUpY, cameraUpZ);
   canvasList[projectionId].background(200);
   
-
+  //for coloring selected unique edges and vertex
+  var loopId = Math.random();
+  for(var i=0; i<model.getGroupList().length; i++) {
+    var group = model.getGroupList()[i];
+    if(group.visible) {
+      var groupVertexList = model.getVertexList(group.id);
+      for(var j=0; j<groupVertexList.length; j++) {
+        addUniqueVertex(groupVertexList[j], loopId); 
+        addUniqueEdge(groupVertexList[j], groupVertexList[(j+1)%groupVertexList.length], loopId, group.selected);
+      }
+    }
+  } 
 
   for(var i=0; i<model.getGroupList().length; i++) {
     var group = model.getGroupList()[i];
-    var groupVertexList = model.getVertexList(group.id);
     if(group.visible) {
+      var groupVertexList = model.getVertexList(group.id);
       if(projectionData.projections[getProjectionIndex(projectionId)].drawMode == 'wireframe') {
         canvasList[projectionId].noFill();
       }
       else if(group.color) {
         canvasList[projectionId].fill(group.color);
       }
-
+      
+      canvasList[projectionId].beginShape();
       //canvasList[projectionId].beginShape(canvasList[projectionId].QUADS);
       if(projectionData.projections[getProjectionIndex(projectionId)].wireframeOverlay) {
-        canvasList[projectionId].strokeWeight(2);
+        canvasList[projectionId].strokeWeight(5);
+        canvasList[projectionId].stroke(wireframeColor);
       } else {
         canvasList[projectionId].noStroke();
       }
-      
-      canvasList[projectionId].beginShape();
-      canvasList[projectionId].stroke(group.selected ? selectedWireframeColor : wireframeColor);
       for(var j=0; j<groupVertexList.length; j++) {
         var vertex =groupVertexList[j];
         canvasList[projectionId].vertex(vertex.x, vertex.y, vertex.z);  
@@ -636,28 +607,67 @@ function drawCanvas(projectionId) {
       canvasList[projectionId].vertex(vertex.x, vertex.y, vertex.z); 
       canvasList[projectionId].endShape();
     }
-
-    if(projectionData.projections[getProjectionIndex(projectionId)].wireframeOverlay) {
-      canvasList[projectionId].strokeWeight(5);
-      for(var j=0; j<groupVertexList.length; j++) {
-        var vertex = groupVertexList[j];
-        canvasList[projectionId].stroke(vertex.selected ? selectedWireframeColor : wireframeColor);
-        canvasList[projectionId].point(vertex.x, vertex.y, vertex.z);
-      }
-    }
  
   }
 
+  if(projectionData.projections[getProjectionIndex(projectionId)].wireframeOverlay) {
+    canvasList[projectionId].stroke(selectedWireframeColor);
+    for(var key in uniqueEdgeData) {
+      var edge = uniqueEdgeData[key];
+      if(edge.selected) {
+        canvasList[projectionId].line(edge.x1, edge.y1, edge.z1, edge.x2, edge.y2, edge.z2);
+      }
+      
+    }
+    for(var key in uniqueVertexData) {
+      var vertex = uniqueVertexData[key];
+      canvasList[projectionId].stroke(vertex.selected ? selectedWireframeColor : wireframeColor);
+      canvasList[projectionId].point(vertex.x, vertex.y, vertex.z);
+    }
+  }
+
   if(projectionData.projections[getProjectionIndex(projectionId)].showAxis) {
-    canvasList[projectionId].strokeWeight(1);
-    canvasList[projectionId].stroke('FF0000');
+    canvasList[projectionId].stroke('red');
     canvasList[projectionId].line(0,0,0,this.axisLength,0,0);
-    canvasList[projectionId].stroke('00FF00');
+    canvasList[projectionId].stroke('green');
     canvasList[projectionId].line(0,0,0,0,this.axisLength,0);
-    canvasList[projectionId].stroke('0000FF');
+    canvasList[projectionId].stroke('blue');
     canvasList[projectionId].line(0,0,0,0,0,this.axisLength);
   }
-  
+}
+
+function addUniqueVertex(vertex, loopId) {
+  id = vertex.x.toFixed(2) + "-" + vertex.y.toFixed(2) + "-" + vertex.z.toFixed(2);
+  if(!uniqueVertexData[id]) {
+    uniqueVertexData[id] = { 'x':vertex.x, 'y':vertex.y, 'z':vertex.z, 'loopId':loopId};
+  } 
+  if(uniqueVertexData[id].loopId != loopId) {
+    uniqueVertexData[id].loopId = loopId;
+    uniqueVertexData[id].selected = vertex.selected;
+  } else if(vertex.selected) {
+    uniqueVertexData[id].selected = true;
+  }
+}
+
+
+function createUniqueEdgeId(vertex1, vertex2) {
+  return vertex1.x.toFixed(2) + "-" + vertex1.y.toFixed(2) + "-" + vertex1.z.toFixed(2) + "-" + vertex2.x.toFixed(2) + "-" + vertex2.y.toFixed(2) + "-" + vertex2.z.toFixed(2);
+}
+function checkUniqueEdgeSelected(vertex1, vertex2) {
+  return uniqueEdgeData[createUniqueEdgeId(vertex1, vertex2)].selected;
+}
+function addUniqueEdge(vertex1, vertex2, loopId, selected) {
+  id = createUniqueEdgeId(vertex1, vertex2);
+  if(!uniqueEdgeData[id]) {
+    uniqueEdgeData[id] = {'x1':vertex1.x, 'y1':vertex1.y, 'z1':vertex1.z, 'x2':vertex2.x, 'y2':vertex2.y, 'z2':vertex2.z, 'loopId':loopId};
+  }
+  if(uniqueEdgeData[id].loopId != loopId) {
+    uniqueEdgeData[id].loopId = loopId;
+    uniqueEdgeData[id].selected = selected;
+  } else if(selected) {
+    uniqueEdgeData[id].selected = true;
+  }
+
 }
 
 

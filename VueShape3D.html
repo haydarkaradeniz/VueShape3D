@@ -58,7 +58,11 @@
             </div>
             <div v-if="rightPanelData.selectedTabId == 'groups'">
                 <div class="divider rp-inner-margin">Group</div>
-                <div :style="{'max-height': ((screenHeight-bottomPanelHeight-topPanelHeight-100)/2)+'px !important', width: '95%', 'overflow-y': 'auto'}">
+                <div class="right-panel-act-div">
+                    <button class="right-panel-act-btn">Dublicate</button>
+                    <button class="right-panel-act-btn">Delete</button>
+                </div>
+                <div :style="{'max-height': (((screenHeight-bottomPanelHeight-topPanelHeight-100)/2)-15)+'px !important', width: '95%', 'overflow-y': 'auto'}">
                     <table class="gvTable">
                         <tr>
                             <th><input type="checkbox" v-model="groupSelectAll" @change="groupListChanged($event,'selectAll', -1)" id="groupListSelectAll"></th>
@@ -75,7 +79,12 @@
                     </table>
                 </div>
                 <div class="divider rp-inner-margin">Vertex</div>
-                <div :style="{'max-height': ((screenHeight-bottomPanelHeight-topPanelHeight-100)/2)+'px !important', width: '95%', 'overflow-y': 'auto'}">
+                <div class="right-panel-act-div">
+                    <button class="right-panel-act-btn">Group</button>
+                    <button class="right-panel-act-btn">Dublicate</button>
+                    <button class="right-panel-act-btn">Delete</button>
+                </div>
+                <div :style="{'max-height': (((screenHeight-bottomPanelHeight-topPanelHeight-100)/2)-15)+'px !important', width: '95%', 'overflow-y': 'auto'}">
                     <table class="gvTable">
                         <tr>
                             <th><input type="checkbox" v-model="vertexSelectAll" @change="vertexListChanged($event,'selectAll')" id="vertexListSelectAll"></th>
@@ -94,7 +103,22 @@
             </div>
         </div>
         <div class="edgePanel-borderless" :style="{position:'absolute', top: (screenHeight-bottomPanelHeight+5)+'px', left:'0px', width:(screenWidth-15)+'px', height:(bottomPanelHeight-20)+'px'}">
-            bottom
+        
+
+            <div class="tabHeader">
+
+                <span class="tabButton" :class="{'tabButton-selected':this.bottomPanelData.selectedTabId == 'test'}" @click="bottomPanelData.selectedTabId = 'test'" >
+                    &nbsp;&nbsp;Test&nbsp;&nbsp;
+                </span>
+              
+            </div>
+
+    
+            <div v-if="bottomPanelData.selectedTabId == 'test'">
+                test
+            </div>
+
+
         </div>
 
 
